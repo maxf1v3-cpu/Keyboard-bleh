@@ -32,30 +32,25 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          accept-android-sdk-licenses: true
+          log-accepted-android-sdk-licenses: false
+          packages: platform-tools
+
+      - name: Install Android API 36
+        run: |
+          sdkmanager --install \
+            "platform-tools" \
+            "platforms;android-36" \
+            "build-tools;36.0.0"
+
       - name: Set up Gradle 9.6.0
         uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: '9.6.0'
           cache-provider: basic
-
-      - name: Accept Android SDK licenses and install API 36
-        shell: bash
-        run: |
-          set -eu
-          SDKMANAGER="$(command -v sdkmanager || true)"
-          if [[ -z "$SDKMANAGER" ]]; then
-            if [[ -n "${ANDROID_HOME:-}" && -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]]; then
-              SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
-            else
-              echo "Android SDK command-line tools (sdkmanager) were not found on this runner."
-              exit 1
-            fi
-          fi
-          yes | "$SDKMANAGER" --licenses >/dev/null
-          "$SDKMANAGER" --install \
-            "platform-tools" \
-            "platforms;android-36" \
-            "build-tools;36.0.0"
 
       - name: Verify source package
         run: python3 verify_project.py
